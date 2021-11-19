@@ -1,0 +1,10 @@
+{
+  "name": "noga-sync",
+  "version": "0.0.1",
+  "description": "NoGA sync server",
+  "main": "index.js",
+  "dependencies": {
+    "config": "^3.3.6",
+    "express": "^4.17.1"
+  }
+}
