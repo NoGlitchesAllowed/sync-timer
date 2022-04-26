@@ -1,47 +1,72 @@
-var targetOffset = null;
-var displayOffset = null;
-var div = document.getElementById("time");
-var offsets = [];
-
-function requestOffset() {
-  var request = new XMLHttpRequest();
-  var sentAt, receivedAt;
-
-  request.open("GET", "/time");
-  request.onreadystatechange = function() {
-    if ((this.status == 200) && (this.readyState == this.HEADERS_RECEIVED)) {
-      receivedAt = Date.now();
-    }
-  };
-
-  request.onload = function() {
-    if (this.status == 200) {
-      try {
-        receivedOffset(JSON.parse(this.response).time + ((receivedAt - sentAt) / 2) - receivedAt);
-      } catch (e) {
-        console.log(e);
-      }
-    }
-  };
-
-  sentAt = Date.now();
-  request.send();
+let css = new URLSearchParams(decodeURI(document.location.hash.substring(1))).get('css');
+if (css) {
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.append(style);
 }
 
-function receivedOffset(offset) {
-  // keep only last 20
-  offsets.push(offset);
-  if (offsets.length > 10) {
-    offsets.shift();
-  }
+let targetOffset = null;
+let offsets = [];
+let ws = null;
+let sentAtTimes = {};
+let id = 0;
+let requestOffsetTask = null;
+let connected = false;
 
-  // remove outliers
-  var sortedOffsets = offsets.slice().sort(function(a, b) {
-    return a - b;
-  });
-  if (sortedOffsets.length > 10) {
-    sortedOffsets = sortedOffsets.slice(1, -1);
+function setConnected(_connected) {
+  if (_connected == connected) return;
+  connected = _connected;
+  if (connected)
+    document.getElementById('time').classList = 'connected';
+  else
+    document.getElementById('time').classList = 'disconnected';
+}
+
+function requestOffset() {
+  if (!ws || ws.readyState != WebSocket.OPEN) return;
+  sentAtTimes[id] = Date.now();
+  ws.send('' + id);
+  id++;
+}
+
+function connect() {
+  let protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  let host = window.location.host + window.location.pathname;
+  ws = new WebSocket(`${protocol}://${host}`);
+  
+  ws.onopen = function() {
+    requestOffset();
   }
+  
+  ws.onmessage = function(e) {
+    let receivedAt = Date.now();
+    let data = JSON.parse(e.data);
+    let sentAt = sentAtTimes[data.id];
+    let retry_in = data.retry_in;
+    delete sentAtTimes[data.id];
+    receivedOffset(data.time + ((receivedAt - sentAt) / 2) - receivedAt);
+    requestOffsetTask = setTimeout(requestOffset, retry_in);
+  };
+
+  ws.onclose = function(e) {
+    ws = null;
+    clearTimeout(requestOffsetTask);
+    setConnected(false);
+    setTimeout(function() {
+      connect();
+    }, 1000);
+  };
+
+  ws.onerror = () => ws.close();
+}
+connect();
+
+function receivedOffset(offset) {
+  offsets.push(offset);
+  if (offsets.length > 10) 
+    offsets.shift();
+
+  var sortedOffsets = offsets.slice().sort((a, b) => a - b);
   if (sortedOffsets.length > 2) {
     sortedOffsets = sortedOffsets.slice(1, -1);
   }
@@ -51,43 +76,31 @@ function receivedOffset(offset) {
     sum += sortedOffsets[i];
   }
   targetOffset = Math.floor(sum/sortedOffsets.length);
+  setConnected(true);
 }
 
-function updateDisplayOffset() {
-  if (targetOffset == null) {
+let lastTimestamp = null;
+function renderTime(timestamp) {
+  window.requestAnimationFrame(renderTime);
+  
+  if (lastTimestamp == null || targetOffset == null) {
+    lastTimestamp = timestamp;
     return;
   }
-
-  if (displayOffset == null) {
-    displayOffset = targetOffset;
-    return;
-  }
-
-  var difference = targetOffset - displayOffset;
-  var absoluteDifference = Math.abs(difference);
-  if (absoluteDifference > 1000 || absoluteDifference < 50) {
-    displayOffset = targetOffset;
-    return;
-  }
-
-  if (difference > 0) {
-    displayOffset = displayOffset + 50;
-  } else {
-    displayOffset = displayOffset - 50;
-  }
+  
+  // compensate for render delay on low FPS
+  let delta = Math.floor(timestamp - lastTimestamp);
+  let time = Date.now() + targetOffset + delta * 2;
+  renderText(time);
+  
+  lastTimestamp = timestamp;
 }
 
-function updateDisplayedTime() {
-  if (displayOffset != null) {
-    // kind of a horrible hack but meh
-    var isoString = new Date(Date.now() + displayOffset).toISOString();
-    var tIndex = isoString.indexOf('T');
-    div.innerHTML = isoString.substring(tIndex + 1, isoString.length - 3);
-  }
-
-  window.requestAnimationFrame(updateDisplayedTime);
+function renderText(time) {
+  let isoString = new Date(time).toISOString();
+  let t = isoString.indexOf('T');
+  let sub = isoString.substring(t + 1, isoString.length - 3);
+  document.getElementById('time').innerHTML = sub;
 }
 
-setInterval(requestOffset, 1000);
-setInterval(updateDisplayOffset, 100);
-window.requestAnimationFrame(updateDisplayedTime);
+window.requestAnimationFrame(renderTime);
