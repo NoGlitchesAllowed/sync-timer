@@ -9,7 +9,7 @@ Public instance: https://sync.noglitchesallowed.org/v2
 ## Install & run
 
 ```
-git clone https://github.com/noglitchesallowed/sync-timer-v2
+git clone https://github.com/noglitchesallowed/sync-timer
 npm install
 npm run build
 npm run start
