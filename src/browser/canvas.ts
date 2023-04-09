@@ -15,8 +15,10 @@ function handleResize () {
   lastRenderedText = undefined
   const lastFillStyle = ctx.fillStyle
 
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
+  const ratio = window.devicePixelRatio
+  canvas.width = window.innerWidth * ratio
+  canvas.height = window.innerHeight * ratio
+  canvas.style.transform = `scale(${1/ratio})`
   ctx = canvas.getContext('2d')!
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'

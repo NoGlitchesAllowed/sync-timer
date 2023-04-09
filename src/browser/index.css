@@ -5,4 +5,5 @@ canvas {
   left: 0;
   top: 0;
   font-family: 'Roboto Mono';
+  transform-origin: 0 0;
 }
