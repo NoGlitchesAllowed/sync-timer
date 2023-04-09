@@ -1,11 +1,50 @@
 {
-  "name": "noga-sync",
-  "version": "0.0.1",
-  "description": "NoGA sync server",
-  "main": "index.js",
+  "name": "sync-timer",
+  "version": "2.0.0",
+  "description": "Browser synchronization timer",
+  "browserslist": "Chrome 95",
+  "scripts": {
+    "autofix": "npx eslint src/**/*.ts --fix",
+    "watch": "parcel watch src/browser/**/*.html",
+    "build": "run-p build:*",
+    "build:browser": "parcel build src/browser/**/*.html",
+    "build:server": "npx tsc -b src/server/tsconfig.json",
+    "start": "node build/server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noglitchesallowed/sync-timer.git"
+  },
+  "author": "Paul Schwandes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/noglitchesallowed/sync-timer/issues"
+  },
+  "homepage": "https://github.com/noglitchesallowed/sync-timer#readme",
+  "targets": {
+    "default": {
+      "distDir": "./build/browser",
+      "publicUrl": "./"
+    }
+  },
   "dependencies": {
-    "config": "^3.3.6",
-    "express": "^4.17.1",
-    "ws": "^8.5.0"
+    "config": "^3.3.9",
+    "express": "^4.18.2",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/config": "^3.3.0",
+    "@types/express": "^4.17.17",
+    "@types/ws": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "eslint": "^8.37.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "npm-run-all": "^4.1.5",
+    "parcel": "^2.8.3",
+    "typescript": "^5.0.4"
   }
 }

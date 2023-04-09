@@ -1,7 +1,8 @@
 {
   "port": 3000,
-  "retry_in": {
-    "min": 100,
-    "max": 10000
+  "updateIntervals": {
+    "addPerClient": 10,
+    "minimum": 100,
+    "maximum": 60000
   }
 }

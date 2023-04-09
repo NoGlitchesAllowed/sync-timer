@@ -1,65 +1,56 @@
 # sync-timer
 
-Minimal self-hostable browser synchronization timer, to be captured as a browser source in live stream production. Inspired by https://time.curby.net/clock, improved with websocket-based time polling.
+Self-hostable browser synchronization timer. Inspired by https://time.curby.net/clock, improved with canvas rendering and websocket time polling. 
 
-Public instance: https://sync.noglitchesallowed.org
+Intended for events/productions to add this as a browser source in stream scenes for participants, to synchronize multiple streams together.
 
-# Styling
+Public instance: https://sync.noglitchesallowed.org/v2
 
-If unable to set custom styling (e.g. OBS Studio browser source), it can be passed in via `#css=` hash string. The `.connected`/`.disconnected` classes are set on the time element depending on the websocket connection state.
-
-Example: `https://sync.noglitchesallowed.org#css=.connected{color:green;}.disconnected{color:red;}`
-
-# Install & run
+## Install & run
 
 ```
-git clone https://github.com/noglitchesallowed/sync-timer
+git clone https://github.com/noglitchesallowed/sync-timer-v2
 npm install
-node .
+npm run build
+npm run start
 ```
 
-View at http://localhost:3000. Port can be changed in config/ if needed.
+## Configuration
 
-# SSL
+The configuration file is stored in *config/default.json*.
 
-Use a reverse proxy for SSL and forward/set `Upgrade`, `Connection`, `Host` and `X-Forwarded-For` headers. Example NGINX config:
+- `port` *Integer* The port that the HTTP server should listen on.
+- `updateIntervals` *Object* Contains properties related to update intervals.
+  - `addPerClient` *Integer* Milliseconds to wait between every update, multiplied by clients connected.
+  - `minimum` *Integer* Minimum update interval in milliseconds.
+  - `maximum` *Integer* Maximum update interval in milliseconds.
 
-```
-server {
-    server_name sync.noglitchesallowed.org;
+## Site Query parameters:
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $http_connection;
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
-    listen [::]:443 ssl; # managed by Certbot
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/sync.noglitchesallowed.org/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/sync.noglitchesallowed.org/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-}
-
-server {
-    if ($host = sync.noglitchesallowed.org) {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
+- `offset=1234` Set an artificial offset.
+  - If you want to enforce a specific stream delay by matching incoming streams to a timer open on the broadcast PC, set this on the INCOMING side only.
+  - Example: `offset=10000` on incoming streams will match the broadcast PC timer if the incoming streams are exactly 10 seconds behind.
+- `counter` Enable counter mode - no time display, just a number counting up.
+  - Accepts a number specifying how many times the counter should tick per second, aka FPS. (default 10)
+  - Example: `counter=60` counts 60 times a second.
+- `rollover=` For counter format only: Display enough digits to ensure the minimum rollover time in seconds. (default 1000)
+- `connected=` Text color if the timer is synchronized with the server. (default white)
+- `disconnected=` Text color if the timer is not synchronized with the server. (default red)
+- `background=` Page background color. (default red)
 
 
-    listen 80;
-    listen [::]:80;
-    server_name sync.noglitchesallowed.org;
-    return 404; # managed by Certbot
-}
-```
+Examples:
+- https://sync.noglitchesallowed.org/v2 default timer
+- https://sync.noglitchesallowed.org/v2?counter 10 fps counter, 1000s min. rollover = display 4 digits
+- https://sync.noglitchesallowed.org/v2?counter=60 60 fps counter, 1000s min. rollover = display 5 digits
+- https://sync.noglitchesallowed.org/v2?counter&rollover=3600 10 fps counter, 1 hour min. rollover = display 5 digits
+- https://sync.noglitchesallowed.org/v2?background=transparent transparent background instead of black
+- https://sync.noglitchesallowed.org/v2?connected=green green timer text
 
-# Licenses
+## SSL
+
+Use a reverse proxy for SSL and forward `Upgrade`, `Connection` and `Host` headers. Example NGINX configuration from the public instance: https://pastebin.com/EK0SavYa
+
+## License
 
 MIT, see LICENSE for details.
-
-Clock favicon made by [Freepik](https://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/)
