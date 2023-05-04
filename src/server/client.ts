@@ -10,7 +10,7 @@ class Client {
   lastSentOffset?: number
   nextRequestId = 0
   closed = false
-  firstRun = true
+  firstMessage = true
 
   constructor (socket: ws.WebSocket) {
     this.socket = socket
@@ -57,6 +57,8 @@ class Client {
     } catch (error) {
       this.socket.close(1008)
       console.error(error)
+    } finally {
+      this.firstMessage = false
     }
   }
 
@@ -74,7 +76,7 @@ class Client {
 
     this.offsets.push(offset)
     const burstFinished = this.offsets.length >= burstCount
-    if (this.firstRun || burstFinished) {
+    if (this.firstMessage || burstFinished) {
       const offsetsSum = this.offsets.reduce((a, b) => a + b, 0)
       const averageOffset = Math.round(offsetsSum / this.offsets.length)
       if (this.lastSentOffset === averageOffset) { return }
@@ -82,9 +84,7 @@ class Client {
       this.send(1, averageOffset)
     }
 
-    if (this.firstRun) return
     if (burstFinished) {
-      this.firstRun = false
       this.offsets = []
     }
   }
