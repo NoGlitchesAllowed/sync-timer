@@ -28,8 +28,10 @@ The configuration file is stored in *config/default.json*.
 ## Site Query parameters:
 
 - `offset=1234` Set an artificial offset.
-  - If you want to enforce a specific stream delay by matching incoming streams to a timer open on the broadcast PC, set this on the INCOMING side only.
-  - Example: `offset=10000` on incoming streams will match the broadcast PC timer if the incoming streams are exactly 10 seconds behind.
+  - To enforce a specific stream delay by matching incoming streams to a timer open on the broadcast PC, add a positive offset on the incoming stream.
+    - Example: `offset=10000` on incoming streams will match the broadcast PC timer if the incoming streams are exactly 10 seconds behind.
+  - If someone is adding artificial delay to their sources, you can instruct them to insert a negative offset to make sure the timer still matches.
+    - Example: if someone is adding 1 second of delay to their mic/camera because their capture card is delayed by 1 second, use `?offset=-1000`
 - `counter` Enable counter mode - no time display, just a number counting up.
   - Accepts a number specifying how many times the counter should tick per second, aka FPS. (default 10)
   - Example: `counter=60` counts 60 times a second.
@@ -41,6 +43,7 @@ The configuration file is stored in *config/default.json*.
 
 Examples:
 - https://sync.noglitchesallowed.org/v2 default timer
+- https://sync.noglitchesallowed.org/v2?offset=-1000 run the timer 1s behind, e.g. if someone is delaying mic/camera to match a delayed capture card
 - https://sync.noglitchesallowed.org/v2?counter 10 fps counter, 1000s min. rollover = display 4 digits
 - https://sync.noglitchesallowed.org/v2?counter=60 60 fps counter, 1000s min. rollover = display 5 digits
 - https://sync.noglitchesallowed.org/v2?counter&rollover=3600 10 fps counter, 1 hour min. rollover = display 5 digits
