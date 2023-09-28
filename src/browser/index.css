@@ -1,9 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Roboto:ital,wght@1,500&display=swap');
 
-canvas {
-  position: fixed;
-  left: 0;
-  top: 0;
-  font-family: 'Roboto Mono';
-  transform-origin: 0 0;
+body { 
+  margin: 0px auto; 
+  overflow: hidden; 
 }

@@ -2,7 +2,7 @@
   "name": "sync-timer",
   "version": "2.0.0",
   "description": "Browser synchronization timer",
-  "browserslist": "Chrome 95",
+  "browserslist": "Chrome 75",
   "scripts": {
     "autofix": "npx eslint src/**/*.ts --fix",
     "watch": "parcel watch src/browser/**/*.html",
@@ -30,6 +30,7 @@
   "dependencies": {
     "config": "^3.3.9",
     "express": "^4.18.2",
+    "hamming-code": "^0.0.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {

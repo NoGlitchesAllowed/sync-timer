@@ -1,4 +1,5 @@
-import { onOffset, onDisconnect } from '.'
+let offset: number = 0
+let connected = false
 
 function connect () {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
@@ -13,13 +14,19 @@ function connect () {
     }
 
     if (op === 1) {
-      onOffset(data)
+      offset = data
+      connected = true
     }
   }
 
   ws.onclose = () => {
-    onDisconnect()
+    connected = false
     setTimeout(connect, 1000)
   }
 }
 connect()
+
+export const connection = {
+  isConnected: () => connected,
+  getOffset: () => offset
+}
